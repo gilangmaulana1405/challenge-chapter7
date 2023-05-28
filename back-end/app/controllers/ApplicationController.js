@@ -1,4 +1,6 @@
-const { NotFoundError } = require("../errors");
+const {
+  NotFoundError
+} = require("../errors");
 
 class ApplicationController {
   handleGetRoot = (req, res) => {
@@ -28,16 +30,18 @@ class ApplicationController {
         details: err.details || null,
       }
     })
-  } 
+  }
 
   getOffsetFromRequest(req) {
-    const { page = 1, pageSize = 10 } = req.query;
-    const offset = (page - 1) * pageSize; 
+    const {page = 1, pageSize = 10} = req.query;
+    const offset = (page - 1) * pageSize;
     return offset;
   }
 
   buildPaginationObject(req, count) {
-    const { page = 1, pageSize = 10 } = req.query;
+    const {
+      page = 1, pageSize = 10
+    } = req.query;
     const pageCount = Math.ceil(count / pageSize);
     return {
       page,
