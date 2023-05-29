@@ -1,7 +1,7 @@
 const {
     Car
 } = require("../models");
-const CarController = require("../controllers/CarController");
+const CarController = require("./CarController");
 
 describe("CarController", () => {
     describe("#handleListCars", () => {
@@ -11,7 +11,12 @@ describe("CarController", () => {
             const size = "Medium";
             const image = "hondajazz.png";
 
-            const mockRequest = {};
+            const mockRequest = {
+                query: {
+                    page: 1,
+                    pageSize: 10
+                }
+            };
 
             const cars = [];
 
@@ -26,7 +31,8 @@ describe("CarController", () => {
             }
 
             const mockCarModel = {
-                findAll: jest.fn().mockReturnValue(cars)
+                findAll: jest.fn().mockReturnValue(cars),
+                count: jest.fn().mockReturnValue(10)
             };
 
             const mockResponse = {
@@ -40,13 +46,79 @@ describe("CarController", () => {
 
             await carController.handleListCars(mockRequest, mockResponse);
 
-            expect(mockCarModel.findAll).toHaveBeenCalled();
+            expect(mockCarModel.findAll).toHaveBeenCalledWith({
+                where: {},
+                include: {
+                    model: undefined,
+                    as: 'userCar',
+                    required: false
+                },
+                offset: 0,
+                limit: 10,
+            });
+            expect(mockCarModel.count).toHaveBeenCalledWith({
+                where: {},
+                include: {
+                    model: undefined,
+                    as: 'userCar',
+                    required: false
+                }
+            })
             expect(mockResponse.status).toHaveBeenCalledWith(200);
-            expect(mockResponse.json).toHaveBeenCalledWith(cars);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                cars,
+                meta: {
+                    pagination: {
+                        page: 1,
+                        pageSize: 10,
+                        count: 10,
+                        pageCount: 1
+                    }
+                }
+            });
         });
     });
 
-    // yg udah berhasil  
+    describe("#handleGetCar", () => {
+        it('should call res.status(200) and res.json with car instance', async () => {
+            const name = "Honda Jazz";
+            const price = 154000;
+            const size = "Medium";
+            const image = "hondajazz.png";
+
+            const mockRequest = {
+                params: {
+                    id: 1
+                }
+            }
+
+            const mockCar = new Car({
+                name,
+                price,
+                size,
+                image
+            })
+            const mockCarModel = {
+                findByPk: jest.fn().mockResolvedValue(mockCar)
+            }
+
+            const mockResponse = {
+                status: jest.fn().mockReturnThis(),
+                json: jest.fn().mockReturnThis()
+            }
+
+
+            const carController = new CarController({
+                carModel: mockCarModel
+            })
+            await carController.handleGetCar(mockRequest, mockResponse)
+
+            expect(mockCarModel.findByPk).toHaveBeenCalledWith(1);
+            expect(mockResponse.status).toHaveBeenCalledWith(200);
+            expect(mockResponse.json).toHaveBeenCalledWith(mockCar);
+        });
+    })
+
     describe("#handleCreateCar", () => {
         it("should call res.status(201) and res.json with car instance", async () => {
             const name = "Honda Jazz";
@@ -91,7 +163,7 @@ describe("CarController", () => {
         });
 
         it("should call res.status(422) and res.json with car instance", async () => {
-            const err = new Error("Something");
+            const err = new Error("Something Error Create");
 
             const name = "Honda Jazz";
             const price = 154000;
@@ -192,49 +264,61 @@ describe("CarController", () => {
             expect(mockResponse.json).toHaveBeenCalledWith(mockCar);
         });
 
-        // it("should call res.status(422) and res.json with error instance", async () => {
-        //     const err = new Error("Something");
-        //     const name = "Toyota Rush";
-        //     const price = 650000;
-        //     const size = "Large";
-        //     const image = "rush.png";
+        it("should call res.status(422) and res.json with error instance", async () => {
+            const err = new Error("Something");
 
-        //     const mockRequest = {
-        //         params: {
-        //             id: 2,
-        //         },
-        //         body: {
-        //             name,
-        //             price,
-        //             size,
-        //             image
-        //         },
-        //     };
+            const mockRequest = {
+                body: {},
+            };
 
-        //     const mockCarModel = {
+            const mockResponse = {
+                status: jest.fn().mockReturnThis(),
+                json: jest.fn().mockReturnThis()
+            };
 
-        //         findByPk : jest.fn(() => Promise.reject(err))
-        //     };
 
-        //     const mockResponse = {
-        //         status : jest.fn().mockReturnThis(),
-        //         json : jest.fn().mockReturnThis()
-        //     };
-            
+            const carController = new CarController({});
+            carController.getCarFromRequest = jest.fn().mockImplementation(() => {
+                throw err
+            })
+            await carController.handleUpdateCar(mockRequest, mockResponse);
 
-        //     const carController = new CarController({
-        //         carModel: mockCarModel
-        //     });
-        //     await carController.handleUpdateCar(mockRequest, mockResponse);
-
-        //     expect(mockCarModel.findByPk).toHaveBeenCalledWith(1);
-        //     expect(mockResponse.status).toHaveBeenCalledWith(422);
-        //     expect(mockResponse.json).toHaveBeenCalledWith({
-        //         error: {
-        //             name: err.name,
-        //             message: err.message,
-        //         },
-        //     });
-        // });
+            expect(mockResponse.status).toHaveBeenCalledWith(422);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                error: {
+                    name: err.name,
+                    message: err.message,
+                },
+            });
+        });
     });
+
+    describe("#handleDeleteCar", () => {
+        it('should call carModel.destroy and res.status(204)', async () => {
+            const mockRequest = {
+                params: {
+                    id: 1
+                }
+            }
+
+            const mockDestroy = jest.fn()
+
+            const mockResponse = {
+                status: jest.fn().mockReturnThis(),
+                end: jest.fn()
+            }
+
+            const carController = new CarController({
+                carModel: {
+                    destroy: mockDestroy
+                }
+            })
+
+            await carController.handleDeleteCar(mockRequest, mockResponse)
+
+            expect(mockDestroy).toHaveBeenCalledWith(mockRequest.params.id)
+            expect(mockResponse.status).toHaveBeenCalledWith(204)
+            expect(mockResponse.end).toHaveBeenCalled()
+        })
+    })
 });

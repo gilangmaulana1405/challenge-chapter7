@@ -16,25 +16,25 @@ class CarController extends ApplicationController {
   }
 
   handleListCars = async (req, res) => {
-    // const offset = this.getOffsetFromRequest(req);
-    // const limit = req.query.pageSize;
-    // const query = this.getListQueryFromRequest(req);
-    // const cars = await this.carModel.findAll(query);
-    // const carCount = await this.carModel.count({
-    //   where: query.where,
-    //   include: query.include,
-    // });
-    // const pagination = this.buildPaginationObject(req, carCount);
+    const offset = this.getOffsetFromRequest(req);
+    const limit = req.query.pageSize;
+    const query = this.getListQueryFromRequest(req);
+    const cars = await this.carModel.findAll(query);
+    const carCount = await this.carModel.count({
+      where: query.where,
+      include: query.include,
+    });
+    const pagination = this.buildPaginationObject(req, carCount);
 
-    // res.status(200).json({
-    //   cars,
-    //   meta: {
-    //     pagination,
-    //   }
-    // });
+    res.status(200).json({
+      cars,
+      meta: {
+        pagination,
+      }
+    });
 
-    const cars = await this.carModel.findAll();
-    res.status(200).json(cars);
+    // const cars = await this.carModel.findAll();
+    // res.status(200).json(cars);
   }
 
   handleGetCar = async (req, res) => {
