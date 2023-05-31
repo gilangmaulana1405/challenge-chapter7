@@ -32,9 +32,6 @@ class CarController extends ApplicationController {
         pagination,
       }
     });
-
-    // const cars = await this.carModel.findAll();
-    // res.status(200).json(cars);
   }
 
   handleGetCar = async (req, res) => {

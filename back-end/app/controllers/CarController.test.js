@@ -321,4 +321,34 @@ describe("CarController", () => {
             expect(mockResponse.end).toHaveBeenCalled()
         })
     })
+
+    describe("getCarFromRequest", () => {
+        it("should Get a car by pk", () => {
+            const mockCar = new Car({
+                id: 1,
+                name: "Honda Jazz",
+                price: "198000",
+                size: "Medium",
+                image: "hondajazz.png",
+            });
+
+            mockCarModel = {
+                findByPk: jest.fn().mockReturnValue(mockCar),
+            };
+
+            const mockRequest = {
+                params: {
+                    id: 1,
+                },
+            };
+
+            const carController = new CarController({
+                carModel: mockCarModel,
+            });
+
+            const car = carController.getCarFromRequest(mockRequest);
+
+            expect(car).toEqual(mockCar);
+        });
+    });
 });

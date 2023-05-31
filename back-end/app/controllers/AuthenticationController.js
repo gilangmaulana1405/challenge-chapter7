@@ -18,7 +18,7 @@ class AuthenticationController extends ApplicationController {
 
   accessControl = {
     PUBLIC: "PUBLIC",
-    ADMIN: "ADMIN",
+    ADMIN: "admin",
     CUSTOMER: "CUSTOMER",
   }
 
