@@ -11,8 +11,8 @@ describe("ApplicationController", () => {
                 json: jest.fn().mockReturnThis(),
             };
 
-            const controller = new ApplicationController();
-            controller.handleGetRoot(mockRequest, mockResponse);
+            const AppController = new ApplicationController();
+            AppController.handleGetRoot(mockRequest, mockResponse);
 
             expect(mockResponse.status).toHaveBeenCalledWith(200);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -26,7 +26,7 @@ describe("ApplicationController", () => {
         it("should call res.status(200) and res.Json with status and message", () => {
             const mockRequest = {
                 method: "get",
-                url: "google.co.id",
+                url: "google.com",
             };
 
             const mockResponse = {
@@ -35,8 +35,8 @@ describe("ApplicationController", () => {
             };
 
             const err = new NotFoundError(mockRequest.method, mockRequest.url);
-            const controller = new ApplicationController();
-            controller.handleNotFound(mockRequest, mockResponse);
+            const AppController = new ApplicationController();
+            AppController.handleNotFound(mockRequest, mockResponse);
 
             expect(mockResponse.status).toHaveBeenCalledWith(404);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -53,7 +53,7 @@ describe("ApplicationController", () => {
         it("should call res.status(500) and res.Json with status and message", () => {
             const mockRequest = {
                 method: "get",
-                url: "google.co.id",
+                url: "google.com",
             };
 
             const mockResponse = {
@@ -65,8 +65,8 @@ describe("ApplicationController", () => {
 
             const err = new NotFoundError(mockRequest.method, mockRequest.url);
 
-            const controller = new ApplicationController();
-            controller.handleError(err, mockRequest, mockResponse, mockNext);
+            const AppController = new ApplicationController();
+            AppController.handleError(err, mockRequest, mockResponse, mockNext);
 
             expect(mockResponse.status).toHaveBeenCalledWith(500);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -87,8 +87,8 @@ describe("ApplicationController", () => {
                     pageSize: 10,
                 },
             };
-            const controller = new ApplicationController();
-            const offset = controller.getOffsetFromRequest(mockRequest);
+            const AppController = new ApplicationController();
+            const offset = AppController.getOffsetFromRequest(mockRequest);
 
             expect(offset).toEqual(0);
         });
@@ -104,8 +104,8 @@ describe("ApplicationController", () => {
             };
             const count = 1;
 
-            const controller = new ApplicationController();
-            const result = controller.buildPaginationObject(mockRequest, count);
+            const AppController = new ApplicationController();
+            const result = AppController.buildPaginationObject(mockRequest, count);
 
             expect(result).toEqual({
                 page: 1,
